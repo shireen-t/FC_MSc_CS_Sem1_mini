@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithms Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #282c34;
+            color: #ffffff;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 5px #61dafb;
+        }
+        #array {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            align-items: flex-end;
+            height: 400px;
+            border: 2px solid #61dafb;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #20232a;
+            box-shadow: 0 0 20px rgba(97, 218, 251, 0.5);
+        }
+        .bar {
+            width: 20px;
+            margin: 0 2px;
+            background-color: #61dafb;
+            transition: height 0.3s ease-in-out, background-color 0.3s, transform 0.3s;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .bar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #61dafb;
+            border: none;
+            border-radius: 5px;
+            color: #282c34;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        button:hover {
+            background-color: #21a1f1;
+            transform: scale(1.05);
+        }
+        .active {
+            background-color: #ff9800; /* Highlight active bars */
+        }
+        #speedControl, #sizeControl {
+            margin: 20px;
+        }
+        #speed, #size {
+            width: 300px;
+        }
+        label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sorting Algorithms Visualization</h1>
+    <div id="array"></div>
+    <button onclick="generateArray()" title="Generate a new random array">Generate Random Array</button>
+    <button onclick="bubbleSort()" title="Sorts the array using the Bubble Sort algorithm">Bubble Sort</button>
+    <button onclick="insertionSort()" title="Sorts the array using the Insertion Sort algorithm">Insertion Sort</button>
+    <button onclick="resetArray()" title="Reset the array to an empty state">Reset Array</button>
+    
+    <div id="sizeControl">
+        <label for="size">Number of Elements: <span id="sizeValue">20</span></label><br>
+        <input type="range" id="size" min="5" max="50" value="20" step="1" onchange="updateSizeValue()"/>
+    </div>
+
+    <div id="speedControl">
+        <label for="speed">Animation Speed: <span id="speedValue">100 ms</span></label><br>
+        <input type="range" id="speed" min="10" max="1000" value="100" step="10" onchange="updateSpeedValue()"/>
+    </div>
+
+    <script>
+        let array = [];
+        const maxElements = 50; // Maximum number of elements in the array
+
+        function generateArray() {
+            const size = document.getElementById('size').value;
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+            drawArray();
+        }
+
+        function drawArray() {
+            const arrayDiv = document.getElementById('array');
+            arrayDiv.innerHTML = '';
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${value * 3}px`; // Scale the bar height
+                bar.dataset.index = index; // Store index for later use
+                arrayDiv.appendChild(bar);
+            });
+        }
+
+        async function bubbleSort() {
+            const speed = document.getElementById('speed').value;
+            for (let i = 0; i < array.length; i++) {
+                for (let j = 0; j < array.length - i - 1; j++) {
+                    highlightBars(j, j + 1);
+                    if (array[j] > array[j + 1]) {
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                        drawArray();
+                        await new Promise(resolve => setTimeout(resolve, speed)); // Delay for visualization
+                    }
+                    resetHighlight(j, j + 1);
+                }
+            }
+        }
+
+        async function insertionSort() {
+            const speed = document.getElementById('speed').value;
+            for (let i = 1; i < array.length; i++) {
+                let key = array[i];
+                let j = i - 1;
+                highlightBars(j, j + 1);
+                while (j >= 0 && array[j] > key) {
+                    array[j + 1] = array[j];
+                    j--;
+                    drawArray();
+                    await new Promise(resolve => setTimeout(resolve, speed)); // Delay for visualization
+                }
+                array[j + 1] = key;
+                drawArray();
+            }
+        }
+
+        function highlightBars(...indices) {
+            const bars = document.querySelectorAll('.bar');
+            indices.forEach(index => {
+                bars[index].classList.add('active');
+            });
+        }
+
+        function resetHighlight(...indices) {
+            const bars = document.querySelectorAll('.bar');
+            indices.forEach(index => {
+                bars[index].classList.remove('active');
+            });
+        }
+
+        function resetArray() {
+            if (confirm("Are you sure you want to reset the array?")) {
+                array = [];
+                drawArray();
+            }
+        }
+
+        function updateSpeedValue() {
+            const speedValue = document.getElementById('speed').value;
+            document.getElementById('speedValue').innerText = `${speedValue} ms`;
+        }
+
+        function updateSizeValue() {
+            const sizeValue = document.getElementById('size').value;
+            document.getElementById('sizeValue').innerText = sizeValue;
+            generateArray(); // Regenerate array when size changes
+        }
+
+        // Initialize with a random array
+        generateArray();
+    </script>
+</body>
+</html>

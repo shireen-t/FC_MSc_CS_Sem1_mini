@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithms Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #282c34; /* Default Dark Mode Background */
+            color: #ffffff; /* Default Dark Mode Text Color */
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 5px #61dafb;
+        }
+        #array {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            align-items: flex-end;
+            height: 400px;
+            border: 2px solid #61dafb;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #20232a; /* Default Dark Mode Array Background */
+            box-shadow: 0 0 20px rgba(97, 218, 251, 0.5);
+            transition: background-color 0.3s;
+        }
+        .bar {
+            width: 20px;
+            margin: 0 2px;
+            background-color: #61dafb;
+            transition: height 0.3s ease-in-out, background-color 0.3s, transform 0.3s;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .bar.moving {
+            transition: transform 0.3s ease-in-out;
+        }
+        .bar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+            white-space: nowrap; /* Prevent text from wrapping */
+            transform: translate(-50%, -100%); /* Position above the bar */
+            bottom: 100%; /* Position above the bar */
+            left: 50%; /* Center it above the bar */
+        }
+        .bar:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #61dafb;
+            border: none;
+            border-radius: 5px;
+            color: #282c34;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        button:hover {
+            background-color: #21a1f1;
+            transform: scale(1.05);
+        }
+        .active {
+            background-color: #ff9800; /* Highlight active bars */
+        }
+        #speedControl, #sizeControl {
+            margin: 20px;
+        }
+        #speed, #size {
+            width: 300px;
+        }
+        label {
+            font-weight: bold;
+        }
+        /* Light mode styles */
+        body.light {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        #array.light {
+            background-color: #f0f0f0;
+            border-color: #61dafb;
+        }
+        .bar.light {
+            background-color: #007bff; /* Light mode bar color */
+        }
+        .bar.light:hover {
+            background-color: #0056b3; /* Light mode bar hover color */
+        }
+        button.light {
+            background-color: #007bff; /* Light mode button color */
+            color: #ffffff;
+        }
+        button.light:hover {
+            background-color: #0056b3; /* Light mode button hover color */
+        }
+        /* Toggle Switch Styles */
+        .toggle-container {
+            position: absolute; /* Make it absolute */
+            top: 30px; /* Position from the top */
+            right: 20px; /* Position from the right */
+        }
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 20px;
+            margin-left: 10px;
+            display: inline-block; /* Align the toggle */
+        }
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 15px;
+            width: 15px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sorting Algorithms Visualization</h1>
+    <div class="toggle-container">
+        <label for="modeToggle">
+            <span>Light Mode:</span>
+            <div class="toggle">
+                <input type="checkbox" id="modeToggle" onclick="toggleMode()">
+                <span class="slider"></span>
+            </div>
+        </label>
+    </div>
+    <div id="array"></div>
+    <button onclick="generateArray()" title="Generate a new random array">Generate Random Array</button>
+    <button onclick="bubbleSort()" title="Sorts the array using the Bubble Sort algorithm">Bubble Sort</button>
+    <button onclick="insertionSort()" title="Sorts the array using the Insertion Sort algorithm">Insertion Sort</button>
+    <button onclick="resetArray()" title="Reset the array to an empty state">Reset Array</button>
+    
+    <div id="sizeControl">
+        <label for="size">Number of Elements: <span id="sizeValue">20</span></label><br>
+        <input type="range" id="size" min="5" max="50" value="20" step="1" onchange="updateSizeValue()"/>
+    </div>
+
+    <div id="speedControl">
+        <label for="speed">Animation Speed: <span id="speedValue">100 ms</span></label><br>
+        <input type="range" id="speed" min="10" max="1000" value="100" step="10" onchange="updateSpeedValue()"/>
+    </div>
+
+    <script>
+        let array = [];
+        const maxElements = 50; // Maximum number of elements in the array
+        let isLightMode = false; // Track current mode
+
+        function generateArray() {
+            const size = document.getElementById('size').value;
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+            drawArray();
+        }
+
+        function drawArray() {
+            const arrayDiv = document.getElementById('array');
+            arrayDiv.innerHTML = '';
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = `bar ${isLightMode ? 'light' : ''}`; // Add light class based on mode
+                bar.style.height = `${value * 3}px`; // Scale the bar height
+                bar.dataset.index = index; // Store index for later use
+
+                // Create tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.innerText = value;
+
+                // Show tooltip on hover
+                bar.addEventListener('mouseenter', () => {
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = 1;
+                });
+                bar.addEventListener('mouseleave', () => {
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = 0;
+                });
+
+                bar.appendChild(tooltip);
+                arrayDiv.appendChild(bar);
+            });
+        }
+
+        async function bubbleSort() {
+            const speed = document.getElementById('speed').value;
+            for (let i = 0; i < array.length; i++) {
+                for (let j = 0; j < array.length - i - 1; j++) {
+                    highlightBars(j, j + 1);
+                    if (array[j] > array[j + 1]) {
+                        // Swap the bars visually
+                        await swapBars(j, j + 1, speed);
+                        // Swap the values in the array
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                    }
+                    resetHighlight(j, j + 1);
+                    await new Promise(resolve => setTimeout(resolve, speed)); // Delay for visualization
+                }
+            }
+        }
+
+        async function insertionSort() {
+            const speed = document.getElementById('speed').value;
+            for (let i = 1; i < array.length; i++) {
+                let key = array[i];
+                let j = i - 1;
+                while (j >= 0 && array[j] > key) {
+                    highlightBars(j, j + 1);
+                    // Move the bars visually
+                    await swapBars(j, j + 1, speed);
+                    // Move the values in the array
+                    array[j + 1] = array[j];
+                    j--;
+                    drawArray(); // Redraw with new heights
+                    await new Promise(resolve => setTimeout(resolve, speed)); // Delay for visualization
+                }
+                array[j + 1] = key;
+                drawArray();
+            }
+        }
+
+        async function swapBars(index1, index2, speed) {
+            const bars = document.querySelectorAll('.bar');
+            const bar1 = bars[index1];
+            const bar2 = bars[index2];
+
+            // Get the initial left positions of the bars
+            const bar1Left = bar1.offsetLeft;
+            const bar2Left = bar2.offsetLeft;
+
+            // Add the 'moving' class to enable smooth transitions
+            bar1.classList.add('moving');
+            bar2.classList.add('moving');
+
+            // Move the bars to each other's position
+            bar1.style.transform = `translateX(${bar2Left - bar1Left}px)`;
+            bar2.style.transform = `translateX(${bar1Left - bar2Left}px)`;
+
+            // Wait for the animation to complete
+            await new Promise(resolve => setTimeout(resolve, speed));
+
+            // Remove the 'moving' class
+            bar1.classList.remove('moving');
+            bar2.classList.remove('moving');
+
+            // Reset transforms after animation
+            bar1.style.transform = '';
+            bar2.style.transform = '';
+
+            // Swap their order in the DOM
+            const parent = bar1.parentNode;
+            if (parent) {
+                if (index1 < index2) {
+                    parent.insertBefore(bar2, bar1);
+                } else {
+                    parent.insertBefore(bar1, bar2);
+                }
+            }
+
+            // Highlight bars to indicate the swap visually
+            resetHighlight(index1, index2);
+            drawArray(); // Redraw to show changes
+        }
+
+
+        function highlightBars(...indices) {
+            const bars = document.querySelectorAll('.bar');
+            indices.forEach(index => {
+                bars[index].classList.add('active');
+            });
+        }
+
+        function resetHighlight(...indices) {
+            const bars = document.querySelectorAll('.bar');
+            indices.forEach(index => {
+                bars[index].classList.remove('active');
+            });
+        }
+
+        function resetArray() {
+            if (confirm("Are you sure you want to reset the array?")) {
+                array = [];
+                drawArray();
+            }
+        }
+
+        function updateSpeedValue() {
+            const speedValue = document.getElementById('speed').value;
+            document.getElementById('speedValue').innerText = `${speedValue} ms`;
+        }
+
+        function updateSizeValue() {
+            const sizeValue = document.getElementById('size').value;
+            document.getElementById('sizeValue').innerText = sizeValue;
+            generateArray(); // Regenerate array when size changes
+        }
+
+        function toggleMode() {
+            isLightMode = !isLightMode; // Toggle mode
+            document.body.classList.toggle('light', isLightMode);
+            document.getElementById('array').classList.toggle('light', isLightMode);
+            const toggleInput = document.getElementById('modeToggle');
+            toggleInput.checked = isLightMode; // Sync toggle state
+            drawArray(); // Redraw array to apply new bar styles
+            updateButtonStyles(); // Update button styles
+        }
+
+        function updateButtonStyles() {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.classList.toggle('light', isLightMode);
+            });
+        }
+
+        // Initialize with a random array
+        generateArray();
+    </script>
+</body>
+</html>
